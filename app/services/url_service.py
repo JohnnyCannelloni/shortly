@@ -27,18 +27,18 @@ def create_short_url(db: Session, original_url: str) -> URL:
         else:
             raise RuntimeError("Failed to generate unique short code after 10 attempts")
         
-        url = URL(short_code=code, original_url=original_url)
-        db.add(url)
-        db.commit()
-        db.refresh(url)
+    url = URL(short_code=code, original_url=original_url)
+    db.add(url)
+    db.commit()
+    db.refresh(url)
 
-        try:
-            r = get_redis()
-            r.set(f"url:{code}, original_url, ex=CACHE_TTL")
-        except Exception:
-            pass
+    try:
+        r = get_redis()
+        r.set(f"url:{code}, original_url, ex=CACHE_TTL")
+    except Exception:
+        pass
 
-        return url
+    return url
     
 def resolve_short_url(db: Session, short_code: str) -> str | None:
     try:
@@ -51,7 +51,7 @@ def resolve_short_url(db: Session, short_code: str) -> str | None:
 
     url = db.execute(
         select(URL).where(URL.short_code == short_code)
-    ).scalar_one_or_none
+    ).scalar_one_or_none()
 
     if url is None:
         return None
@@ -73,7 +73,7 @@ def record_click(
 ) -> None:
     url = db.execute(
         select(URL).where(URL.short_code == short_code)
-    ).scalar_one_or_none
+    ).scalar_one_or_none()
 
     if url is None:
         return
@@ -92,7 +92,7 @@ def record_click(
 def get_url_stats(db: Session, short_code: str) -> URL | None:
     url = db.execute(
         select(URL).where(URL.short_code == short_code)
-    ).scalar_one_or_none
+    ).scalar_one_or_none()
 
     return url
 
